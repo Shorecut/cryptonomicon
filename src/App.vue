@@ -68,7 +68,7 @@
       <hr class="w-full border-t border-gray-600 my-4" />
       <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-3">
         <div
-          v-for="t in filteredTickers()"
+          v-for="t in filteredTickers"
           :key="t.name"
           @click="select(t)"
           :class="{
@@ -159,10 +159,31 @@ export default {
       allCoins:{},
       page:1,
       filter:"",
-      hasNextPage:true,
     };
   },
   computed:{
+
+    startIndex(){
+      return (this.page - 1) * 6
+    },
+
+    endIndex(){
+      return this.page * 6
+    },
+
+    filteredTickers(){
+
+      const filteredTickers = this.tickers
+        .filter(ticker => ticker.name.includes(this.filter))
+
+      return filteredTickers.slice(this.startIndex, this.endIndex)
+    },
+
+    hasNextPage(){
+      return this.filteredTickers.length > this.endIndex;
+    },
+
+
   tickerExists(){
    return this.tickers.some(t=> t.name.toUpperCase() === this.ticker.toUpperCase());
   },
@@ -199,18 +220,6 @@ export default {
   },
 
   methods: {
-
-    filteredTickers(){
-      const start = (this.page - 1) * 6
-      const end = this.page * 6
-
-     const filteredTickers = this.tickers
-        .filter(ticker => ticker.name.includes(this.filter))
-
-      this.hasNextPage= filteredTickers.length > end
-
-      return filteredTickers.slice(start, end)
-    },
 
     async loadAllCoins(){
       const res = await fetch(`https://min-api.cryptocompare.com/data/all/coinlist?summary=true`)
